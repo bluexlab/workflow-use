@@ -7,7 +7,7 @@ import webbrowser
 from pathlib import Path
 
 import typer
-from browser_use.browser.browser import Browser
+from browser_use.browser.browser import Browser, BrowserConfig
 
 # Assuming OPENAI_API_KEY is set in the environment
 from langchain_openai import ChatOpenAI
@@ -335,7 +335,9 @@ def run_workflow_command(
 	try:
 		# Instantiate Browser and WorkflowController for the Workflow instance
 		# Pass llm_instance for potential agent fallbacks or agentic steps
-		browser_instance = Browser()  # Add any necessary config if required
+		cfg = BrowserConfig()
+		cfg.headless = True
+		browser_instance = Browser(cfg)  # Add any necessary config if required
 		controller_instance = WorkflowController()  # Add any necessary config if required
 		workflow_obj = Workflow.load_from_file(
 			str(workflow_path),
