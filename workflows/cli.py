@@ -400,7 +400,10 @@ def run_workflow_command(
 	try:
 		# Call run on the Workflow instance
 		# close_browser_at_end=True is the default for Workflow.run, but explicit for clarity
-		result = asyncio.run(workflow_obj.run(inputs=inputs, close_browser_at_end=True, screenshot_path=screenshot_path))
+		enable_screenshot = False
+		if screenshot_path:
+			enable_screenshot = True
+		result = asyncio.run(workflow_obj.run(inputs=inputs, close_browser_at_end=True, screenshot=enable_screenshot))
 
 		typer.secho('\nWorkflow execution completed!', fg=typer.colors.GREEN, bold=True)
 		typer.echo(typer.style('Result:', bold=True))
@@ -410,6 +413,9 @@ def run_workflow_command(
 		# and print each item, or serialize the whole list to JSON.
 		# For now, sticking to the step count as per original output.
 
+		if enable_screenshot and result.final_screenshot:
+			with open(screenshot_path, "wb") as f:
+				f.write(result.final_screenshot)
 	except Exception as e:
 		typer.secho(f'Error running workflow: {e}', fg=typer.colors.RED)
 		raise typer.Exit(code=1)

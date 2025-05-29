@@ -506,7 +506,7 @@ class Workflow:
 		close_browser_at_end: bool = True,
 		cancel_event: asyncio.Event | None = None,
 		output_model: type[T] | None = None,
-		screenshot_path: Path | None = None,
+		screenshot: bool = False,
 	) -> WorkflowRunOutput[T]:
 		"""Execute the workflow asynchronously using step dictionaries.
 
@@ -560,7 +560,8 @@ class Workflow:
 				output_model_result = await self._convert_results_to_output_model(results, output_model)
 
 			# Get the final screen shot
-			if screenshot_path:
+			screenshot_buffer: bytes | None = None
+			if screenshot:
 				await asyncio.sleep(3)
 				page = await self.browser_context.get_current_page()
 				
@@ -574,7 +575,7 @@ class Workflow:
 				await asyncio.sleep(1)
 				
 				# Take the screenshot of the entire page, not just the viewport
-				await page.screenshot(path=screenshot_path, full_page=True)
+				screenshot_buffer = await page.screenshot(full_page=True)
 
 		finally:
 			if close_browser_at_end:
@@ -588,7 +589,7 @@ class Workflow:
 		if close_browser_at_end:
 			await self.browser.close()
 
-		return WorkflowRunOutput(step_results=results, output_model=output_model_result)
+		return WorkflowRunOutput(step_results=results, output_model=output_model_result, final_screenshot=screenshot_buffer)
 
 	# ------------------------------------------------------------------
 	# LangChain tool wrapper
