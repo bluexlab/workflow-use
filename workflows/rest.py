@@ -1,12 +1,15 @@
 import base64
+import os
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Dict, Any, AnyStr, List, Optional
 from pydantic import BaseModel
 from workflow_use.workflow.service import Workflow
 from workflow_use.controller.service import WorkflowController
 from workflow_use.schema.views import WorkflowInputSchemaDefinition
 from browser_use.browser.browser import BrowserConfig, Browser
+import typer
 
 from langchain_core.language_models.chat_models import BaseChatModel
 # Assuming OPENAI_API_KEY is set in the environment
@@ -15,7 +18,7 @@ from langchain_openai import ChatOpenAI
 
 class WorkflowStorage:
 	def __init__(self) -> None:
-		self.workflow_folder = Path("./tmp").resolve()
+		self.workflow_folder = Path("./bill_of_lading").resolve()
 
 	def list_workflows(self) -> List[str]:
 		return [f.name for f in self.workflow_folder.iterdir() if f.is_file() and not f.name.startswith('temp_recording')]
@@ -47,7 +50,31 @@ class WorkflowInputSchemaResponse(BaseModel):
 
 class WorkflowRunResult(BaseModel):
 	error: Optional[str] = None
-	screenshot: Optional[str] = None
+	screenshot: Optional[str] = None	# base64 encoded screenshot
+
+# Get API key from environment variables
+API_KEY = os.environ.get("API_KEY", "")
+if not API_KEY:
+    print("Warning: API_KEY environment variable not set. API will be insecure!")
+
+# Security scheme for Bearer token authentication
+security = HTTPBearer()
+
+# Authentication dependency
+def verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    if not API_KEY:
+        # If API_KEY is not set, we'll allow access but log a warning
+        # This is usually not recommended for production
+        print("Warning: Allowing unauthenticated request because API_KEY is not set")
+        return True
+    
+    if credentials.credentials != API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return True
 
 app = FastAPI()
 workflow_storage = WorkflowStorage()
@@ -66,15 +93,15 @@ except Exception as e:
 		page_extraction_llm = ChatOpenAI(model='gpt-4o-mini')
 
 
-@app.get("/hello")
+@app.get("/hello", dependencies=[Depends(verify_api_key)])
 async def hello():
 	return {"message": "Hello, World!"}
 
-@app.get("/workflows", status_code=200)
+@app.get("/workflows", status_code=200, dependencies=[Depends(verify_api_key)])
 async def get_workflows():
 	return {"workflows": workflow_storage.list_workflows()}
 
-@app.get("/workflows/{workflow_name}/input_schema", status_code=200)
+@app.get("/workflows/{workflow_name}/input_schema", status_code=200, dependencies=[Depends(verify_api_key)])
 async def get_workflow_input_schema(workflow_name: str) -> WorkflowInputSchemaResponse:
 	workflow = workflow_storage.get_workflow(workflow_name)
 	if not workflow:
@@ -86,7 +113,7 @@ async def get_workflow_input_schema(workflow_name: str) -> WorkflowInputSchemaRe
 	)
 	return workflow_input_schema
 
-@app.post("/workflows/{workflow_name}", status_code=200)
+@app.post("/workflows/{workflow_name}", status_code=200, dependencies=[Depends(verify_api_key)])
 async def run_workflow(workflow_name: str, inputs: Dict[AnyStr, Any]) -> WorkflowRunResult:
 	# Instantiate Browser and WorkflowController for the Workflow instance
 	# Pass llm_instance for potential agent fallbacks or agentic steps
