@@ -33,3 +33,4 @@ RUN . .venv/bin/activate
 ENV PATH="/app/workflows/.venv/bin:$PATH"
 RUN playwright install-deps chromium
 RUN playwright install chromium
+CMD ["uvicorn", "rest:app", "--host", "0.0.0.0", "--port", "8000"]
