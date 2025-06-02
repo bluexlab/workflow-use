@@ -11,6 +11,7 @@ class WorkflowRunOutput(BaseModel, Generic[T]):
 
 	step_results: List[ActionResult | AgentHistoryList]
 	output_model: Optional[T] = None
+	final_screenshot: Optional[bytes] = None
 
 
 class StructuredWorkflowOutput(BaseModel):

@@ -7,7 +7,7 @@ import webbrowser
 from pathlib import Path
 
 import typer
-from browser_use.browser.browser import Browser
+from browser_use.browser.browser import Browser, BrowserConfig
 
 # Assuming OPENAI_API_KEY is set in the environment
 from langchain_openai import ChatOpenAI
@@ -335,7 +335,9 @@ def run_workflow_command(
 	try:
 		# Instantiate Browser and WorkflowController for the Workflow instance
 		# Pass llm_instance for potential agent fallbacks or agentic steps
-		browser_instance = Browser()  # Add any necessary config if required
+		cfg = BrowserConfig()
+		cfg.headless = True
+		browser_instance = Browser(cfg)  # Add any necessary config if required
 		controller_instance = WorkflowController()  # Add any necessary config if required
 		workflow_obj = Workflow.load_from_file(
 			str(workflow_path),
@@ -398,7 +400,10 @@ def run_workflow_command(
 	try:
 		# Call run on the Workflow instance
 		# close_browser_at_end=True is the default for Workflow.run, but explicit for clarity
-		result = asyncio.run(workflow_obj.run(inputs=inputs, close_browser_at_end=True, screenshot_path=screenshot_path))
+		enable_screenshot = False
+		if screenshot_path:
+			enable_screenshot = True
+		result = asyncio.run(workflow_obj.run(inputs=inputs, close_browser_at_end=True, screenshot=enable_screenshot))
 
 		typer.secho('\nWorkflow execution completed!', fg=typer.colors.GREEN, bold=True)
 		typer.echo(typer.style('Result:', bold=True))
@@ -408,6 +413,9 @@ def run_workflow_command(
 		# and print each item, or serialize the whole list to JSON.
 		# For now, sticking to the step count as per original output.
 
+		if enable_screenshot and result.final_screenshot:
+			with open(screenshot_path, "wb") as f:
+				f.write(result.final_screenshot)
 	except Exception as e:
 		typer.secho(f'Error running workflow: {e}', fg=typer.colors.RED)
 		raise typer.Exit(code=1)

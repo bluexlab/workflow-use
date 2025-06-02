@@ -1,0 +1,56 @@
+{
+  "workflow_analysis": "The workflow is designed to track cargo using a Bill of Lading number on the website \"https://ct.shipmentlink.com/\". The process involves navigating to the tracking page, selecting the appropriate search option (in this case, 'Booking No.'), inputting the Bill of Lading number, and executing the search. The key variables required for the workflow are the URL of the tracking page and the Bill of Lading number. Given this context, the input schema will include a required field for the Bill of Lading number to allow dynamic searches.",
+  "name": "EGLV Bill of Lading Query",
+  "description": "This workflow retrieves cargo information using an EGLV Bill of Lading number on shipmentlink.com.",
+  "version": "1.0",
+  "steps": [
+    {
+      "description": "Navigate to the cargo tracking page.",
+      "output": null,
+      "timestamp": null,
+      "tabId": null,
+      "type": "navigation",
+      "url": "https://ct.shipmentlink.com/servlet/TDB1_CargoTracking.do"
+    },
+    {
+      "description": "Select the 'Booking No.' option to search by Bill of Lading number.",
+      "output": null,
+      "timestamp": 1748832976454,
+      "tabId": 489359496,
+      "type": "click",
+      "cssSelector": "input[type=\"radio\"][id=\"s_bk\"][name=\"SEL\"]",
+      "xpath": "id(\"s_bk\")",
+      "elementTag": "INPUT",
+      "elementText": ""
+    },
+    {
+      "description": "Enter the Bill of Lading number into the input field.",
+      "output": null,
+      "timestamp": 1748832980405,
+      "tabId": 489359496,
+      "type": "input",
+      "cssSelector": "input.ec-mb-1[type=\"text\"][id=\"NO\"][name=\"NO\"]",
+      "value": "{bill_of_lading_number}",
+      "xpath": "id(\"NO\")",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Click the search button to execute the search.",
+      "output": null,
+      "timestamp": 1748832982017,
+      "tabId": 489359496,
+      "type": "click",
+      "cssSelector": "input.ec-btn.ec-btn-default.ec-fs-16[type=\"button\"]",
+      "xpath": "id(\"nav-quick\")/table[1]/tbody[1]/tr[1]/td[1]/table[1]/tbody[1]/tr[1]/td[2]/table[1]/tbody[1]/tr[1]/td[1]/div[2]/input[1]",
+      "elementTag": "INPUT",
+      "elementText": ""
+    }
+  ],
+  "input_schema": [
+    {
+      "name": "bill_of_lading_number",
+      "type": "string",
+      "required": true
+    }
+  ]
+}

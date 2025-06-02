@@ -1,0 +1,56 @@
+{
+  "workflow_analysis": "The workflow is designed to verify the content of a Bill of Lading on MSC's website. It involves navigating to the MSC shipment tracking page, accepting cookies, inputting a Bill of Lading number, and performing a search. This task can be automated by directly navigating to the URL, accepting cookies, and using inputs for the Bill of Lading number. The workflow steps can be optimized by eliminating repeated actions such as backspacing. Important variable inputs include the Bill of Lading number, which is dynamic and user-dependent. Other inputs are static with no necessary dynamic user inputs.",
+  "name": "MSC Bill of Lading Verification",
+  "description": "This workflow automates the process of verifying the MSC Bill of Lading content online.",
+  "version": "1.0",
+  "steps": [
+    {
+      "description": "Navigate to MSC shipment tracking page.",
+      "output": null,
+      "timestamp": null,
+      "tabId": null,
+      "type": "navigation",
+      "url": "https://www.msc.com/en/track-a-shipment"
+    },
+    {
+      "description": "Accept cookies to proceed.",
+      "output": null,
+      "timestamp": 1747977695847,
+      "tabId": 489359312,
+      "type": "click",
+      "cssSelector": "button[id=\"onetrust-accept-btn-handler\"]",
+      "xpath": "id(\"onetrust-accept-btn-handler\")",
+      "elementTag": "BUTTON",
+      "elementText": "Accept All"
+    },
+    {
+      "description": "Input the Bill of Lading number.",
+      "output": null,
+      "timestamp": 1747977712911,
+      "tabId": 489359312,
+      "type": "input",
+      "cssSelector": "input[type=\"text\"][id=\"trackingNumber\"][placeholder*=\"Enter a Container/Bill of Lading Number\"]",
+      "value": "{bill_of_lading_number}",
+      "xpath": "id(\"trackingNumber\")",
+      "elementTag": "INPUT"
+    },
+    {
+      "description": "Click on the search button to verify.",
+      "output": null,
+      "timestamp": 1747977718226,
+      "tabId": 489359312,
+      "type": "click",
+      "cssSelector": "button.msc-cta-icon-simple.msc-search-autocomplete__search",
+      "xpath": "id(\"main\")/div[1]/div[1]/div[1]/div[1]/form[1]/div[1]/div[2]/div[1]/button[2]",
+      "elementTag": "BUTTON",
+      "elementText": ""
+    }
+  ],
+  "input_schema": [
+    {
+      "name": "bill_of_lading_number",
+      "type": "string",
+      "required": true
+    }
+  ]
+}
